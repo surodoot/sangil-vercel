@@ -106,6 +106,54 @@ test.describe("mobile navigation", () => {
     await expect(page).toHaveURL(/#about$/);
   });
 
+  test("same-hash reselection scrolls after rapid navigation and history traversal", async ({
+    page,
+  }) => {
+    // Exercise the live regression with smooth scrolling enabled as well.
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/");
+    const navigate = async (name: string, hash: string) => {
+      await page.getByRole("button", { name: "메뉴 열기" }).click();
+      await page
+        .getByRole("dialog")
+        .getByRole("link", { name, exact: true })
+        .click();
+      await expect(page).toHaveURL(new RegExp(`${hash}$`));
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+    };
+    const expectTargetPosition = async () => {
+      await expect
+        .poll(() =>
+          page.locator("#about").evaluate((node) => {
+            const top = node.getBoundingClientRect().top;
+            return top >= 68 && top < 220;
+          }),
+        )
+        .toBe(true);
+      await expect(page.locator("main")).not.toHaveAttribute("inert", "");
+      expect(
+        await page.evaluate(() => document.documentElement.style.overflow),
+      ).not.toBe("hidden");
+    };
+    await navigate("사업분야", "#business");
+    await navigate("회사소개", "#about");
+    await page.goBack();
+    await expect(page).toHaveURL(/#business$/);
+    await page.goForward();
+    await expect(page).toHaveURL(/#about$/);
+    // Moving away leaves the current hash unchanged, reproducing the stuck state.
+    for (let repeat = 0; repeat < 2; repeat++) {
+      await page
+        .locator("#contact")
+        .evaluate((node) => node.scrollIntoView({ behavior: "instant" }));
+      await expect(page).toHaveURL(/#about$/);
+      await navigate("회사소개", "#about");
+      await expectTargetPosition();
+    }
+    await page.goBack();
+    await expect(page).toHaveURL(/#business$/);
+  });
+
   test("desktop resize closes the mobile menu and restores background", async ({
     page,
   }) => {
@@ -222,13 +270,11 @@ test.describe("local inquiry preview", () => {
     ).toBeVisible();
     await page.getByRole("button", { name: "invalid.exe 선택 취소" }).click();
     await expect(page.getByText("invalid.exe", { exact: true })).toHaveCount(0);
-    await page
-      .locator("#inquiry-files")
-      .setInputFiles({
-        name: "drawing.pdf",
-        mimeType: "application/pdf",
-        buffer: Buffer.from("test"),
-      });
+    await page.locator("#inquiry-files").setInputFiles({
+      name: "drawing.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("test"),
+    });
     await expect(
       page.getByText("선택됨, 미전송", { exact: false }),
     ).toBeVisible();
