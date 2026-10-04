@@ -32,9 +32,17 @@ export const inquirySchema = z.object({
     .trim()
     .min(1, "제품 또는 부품명을 입력해 주세요.")
     .max(100, "100자 이내로 입력해 주세요."),
-  material: z.string().trim().max(100, "100자 이내로 입력해 주세요.").optional(),
+  material: z
+    .string()
+    .trim()
+    .max(100, "100자 이내로 입력해 주세요.")
+    .optional(),
   quantity: z.string().trim().max(50, "50자 이내로 입력해 주세요.").optional(),
-  desiredDeadline: z.string().trim().max(50, "50자 이내로 입력해 주세요.").optional(),
+  desiredDeadline: z
+    .string()
+    .trim()
+    .max(50, "50자 이내로 입력해 주세요.")
+    .optional(),
   message: z
     .string()
     .trim()
@@ -42,7 +50,16 @@ export const inquirySchema = z.object({
     .max(2000, "문의 내용은 2000자 이내로 입력해 주세요."),
   privacyConsent: z
     .boolean()
-    .refine((value) => value === true, { message: "개인정보 수집 및 이용에 동의해 주세요." }),
+    .refine((value) => value === true, {
+      message: "개인정보 수집 및 이용에 동의해 주세요.",
+    }),
+});
+
+// Local preview checks the same fields without asking for consent to a service
+// that cannot yet accept submissions. Keep inquirySchema's consent requirement
+// for a future, properly configured production submission flow.
+export const inquiryPreviewSchema = inquirySchema.extend({
+  privacyConsent: z.boolean(),
 });
 
 export type InquiryFormValues = z.infer<typeof inquirySchema>;
@@ -52,7 +69,9 @@ const MAX_FILE_SIZE_BYTES = inquiryConfig.maxFileSizeMB * 1024 * 1024;
 
 export function validateFile(file: File): string | null {
   const ext = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
-  if (!ALLOWED_EXTENSIONS.includes(ext as (typeof ALLOWED_EXTENSIONS)[number])) {
+  if (
+    !ALLOWED_EXTENSIONS.includes(ext as (typeof ALLOWED_EXTENSIONS)[number])
+  ) {
     return `지원하지 않는 파일 형식입니다. (허용: ${ALLOWED_EXTENSIONS.join(", ")})`;
   }
   if (file.size > MAX_FILE_SIZE_BYTES) {

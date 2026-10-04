@@ -1,22 +1,48 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
-import { Menu, FileText } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { ArrowUpRight, Menu } from "lucide-react";
 import { navigation } from "@/data/company";
 import { Logo } from "@/components/ui/Logo";
 import { AnchorLink } from "@/components/ui/AnchorLink";
-import { Button } from "@/components/ui/Button";
 import { MobileMenu } from "./MobileMenu";
 import { useActiveSection } from "@/hooks/useActiveSection";
-import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { cn } from "@/lib/utils";
 
+const sectionIds = navigation.map((item) => item.href.slice(1));
+const primaryItems = navigation.filter((item) => item.href !== "#contact");
+
 export function Header() {
+  const pathname = usePathname();
+
+  // A route change also resets the menu and reconnects section observation.
+  return <HeaderContent key={pathname} pathname={pathname} />;
+}
+
+function HeaderContent({ pathname }: { pathname: string }) {
   const [open, setOpen] = useState(false);
-  const { scrolled, pastHero } = useScrollProgress();
-  const sectionIds = navigation.map((item) => item.href.replace("#", ""));
-  const activeId = useActiveSection(sectionIds);
-  const primaryItems = navigation.filter((item) => item.href !== "#contact");
+  const observedId = useActiveSection(sectionIds);
+  const activeId = pathname === "/" ? observedId : null;
+  const closeMenu = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const handleBreakpoint = (event: MediaQueryListEvent) => {
+      if (event.matches) closeMenu();
+    };
+
+    desktop.addEventListener("change", handleBreakpoint);
+    window.addEventListener("popstate", closeMenu);
+    window.addEventListener("hashchange", closeMenu);
+    return () => {
+      desktop.removeEventListener("change", handleBreakpoint);
+      window.removeEventListener("popstate", closeMenu);
+      window.removeEventListener("hashchange", closeMenu);
+    };
+  }, [open, closeMenu]);
 
   return (
     <>
@@ -24,80 +50,57 @@ export function Header() {
         본문 바로가기
       </a>
 
-      <header className="fixed inset-x-0 top-0 z-50 pt-safe">
-        <div
-          className={cn(
-            "mx-auto max-w-6xl px-4 transition-[padding] duration-500 sm:px-6 lg:px-8",
-            pastHero ? "pt-3" : "pt-5",
-          )}
-        >
-          <div
-            style={{ "--glass-alpha": scrolled ? 0.85 : 0.62 } as CSSProperties}
-            className={cn(
-              "glass-panel flex items-center justify-between rounded-full transition-[padding] duration-500",
-              pastHero ? "px-4 py-2" : "px-5 py-3",
-            )}
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-[#e5e9ed] bg-white pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex h-[68px] max-w-[1376px] items-center justify-between gap-5 px-6 lg:h-20 lg:px-12">
+          <Logo />
+
+          <nav
+            aria-label="주요 메뉴"
+            className="hidden h-full items-center gap-6 lg:flex xl:gap-8"
           >
-            {/* 하단 미세한 샴페인 골드 라인 */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-6 bottom-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent"
-            />
+            {primaryItems.map((item) => {
+              const active = activeId === item.href.slice(1);
+              return (
+                <AnchorLink
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "location" : undefined}
+                  className={cn(
+                    "relative flex h-full items-center whitespace-nowrap text-[14px] font-semibold transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:transition-colors",
+                    active
+                      ? "text-[#2358e8] after:bg-[#2358e8]"
+                      : "text-[#52616d] after:bg-transparent hover:text-[#172b3a]",
+                  )}
+                >
+                  {item.label}
+                </AnchorLink>
+              );
+            })}
+          </nav>
 
-            <Logo />
+          <AnchorLink
+            href="#contact"
+            className="hidden min-h-11 items-center justify-center gap-3 rounded-md bg-[#2358e8] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1946c4] lg:inline-flex"
+          >
+            견적 문의
+            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+          </AnchorLink>
 
-            <nav aria-label="주요 메뉴" className="hidden items-center gap-1 lg:flex">
-              {primaryItems.map((item) => {
-                const id = item.href.replace("#", "");
-                const active = activeId === id;
-                return (
-                  <AnchorLink
-                    key={item.href}
-                    href={item.href}
-                    aria-current={active ? "true" : undefined}
-                    className={cn(
-                      "relative rounded-full px-4 py-2 font-en text-sm font-medium transition-colors duration-300",
-                      active
-                        ? "bg-sapphire/10 text-sapphire ring-1 ring-sapphire/25"
-                        : "text-body hover:text-navy",
-                    )}
-                  >
-                    {item.label}
-                  </AnchorLink>
-                );
-              })}
-            </nav>
-
-            <div className="hidden lg:flex lg:items-center">
-              <Button href="#contact" size="md">
-                견적 문의
-              </Button>
-            </div>
-
-            <div className="flex items-center gap-2 lg:hidden">
-              <AnchorLink
-                href="#contact"
-                aria-label="견적 문의"
-                className="touch-target flex items-center justify-center rounded-full border border-line-strong text-navy"
-              >
-                <FileText className="h-5 w-5" aria-hidden="true" />
-              </AnchorLink>
-              <button
-                type="button"
-                aria-label={open ? "메뉴 닫기" : "메뉴 열기"}
-                aria-expanded={open}
-                aria-controls="mobile-menu"
-                onClick={() => setOpen(true)}
-                className="touch-target flex items-center justify-center rounded-full border border-line-strong text-navy"
-              >
-                <Menu className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
+          <button
+            type="button"
+            aria-label="메뉴 열기"
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-haspopup="dialog"
+            onClick={() => setOpen(true)}
+            className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-[#172b3a] transition-colors hover:bg-[#f1f4f6] lg:hidden"
+          >
+            <Menu className="h-6 w-6" strokeWidth={1.75} aria-hidden="true" />
+          </button>
         </div>
       </header>
 
-      <MobileMenu open={open} onClose={() => setOpen(false)} activeId={activeId} />
+      <MobileMenu open={open} onClose={closeMenu} activeId={activeId} />
     </>
   );
 }

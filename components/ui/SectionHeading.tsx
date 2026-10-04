@@ -26,8 +26,8 @@ export function SectionHeading({
       {eyebrow && (
         <p
           className={cn(
-            "font-en text-sm font-semibold uppercase tracking-[0.18em]",
-            onDark ? "text-gold-soft" : "text-sapphire",
+            "section-kicker",
+            onDark ? "!text-[#aac7ff]" : "text-sapphire",
           )}
         >
           {eyebrow}

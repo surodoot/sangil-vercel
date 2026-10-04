@@ -9,16 +9,19 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-const phoneDisplay = isConfigured(contactInfo.phone) ? contactInfo.phone : "[대표 전화번호 입력]";
+// Contact details remain unconfigured until verified by the company.
+const phoneDisplay = isConfigured(contactInfo.phone)
+  ? contactInfo.phone
+  : "등록 준비 중";
 const emailDisplay = isConfigured(contactInfo.generalEmail)
   ? contactInfo.generalEmail
   : isConfigured(contactInfo.quoteEmail)
     ? contactInfo.quoteEmail
-    : "[견적 문의 이메일 입력]";
+    : "등록 준비 중";
 
 export default function PrivacyPage() {
   return (
-    <div className="bg-ivory py-24 sm:py-32">
+    <div className="bg-ivory pb-20 pt-28 sm:pb-28 sm:pt-36">
       <Container className="max-w-3xl">
         <p className="font-en text-sm font-semibold uppercase tracking-[0.18em] text-sapphire">
           Privacy Policy
@@ -33,9 +36,11 @@ export default function PrivacyPage() {
         </p>
 
         <div className="mt-4 rounded-xl border border-dashed border-line-strong bg-mist px-5 py-4 text-caption text-muted">
-          ⚠ 이 문서는 일반적인 개인정보처리방침 표준 항목으로 구성된 초안입니다.
-          공개 전 회사의 실제 운영 방식(위탁 업체, 보관 기간, 담당자 연락처 등)에
-          맞게 검토하고, 필요 시 법률 자문을 받아 확정해 주세요.
+          현재 홈페이지 문의 양식은 입력 내용 확인만 제공하며, 내용과 파일이
+          서버로 전송되거나 저장되지 않습니다. 이 문서는 일반적인
+          개인정보처리방침 표준 항목으로 구성된 초안입니다. 공개 전 회사의 실제
+          운영 방식(위탁 업체, 보관 기간, 담당자 연락처 등)에 맞게 검토하고,
+          필요 시 법률 자문을 받아 확정해 주세요.
         </div>
 
         <div className="mt-12 space-y-10 text-body text-muted">
@@ -49,8 +54,13 @@ export default function PrivacyPage() {
             </p>
             <ul className="mt-3 list-disc space-y-1 pl-5">
               <li>필수 항목: 회사명, 담당자명, 연락처, 이메일, 문의 내용</li>
-              <li>선택 항목: 제품/부품명, 소재, 예상 수량, 희망 납기, 첨부파일(도면 등)</li>
-              <li>수집 방법: 홈페이지 견적 문의 양식을 통한 이용자의 자발적 입력</li>
+              <li>
+                선택 항목: 제품/부품명, 소재, 예상 수량, 희망 납기,
+                첨부파일(도면 등)
+              </li>
+              <li>
+                수집 방법: 홈페이지 견적 문의 양식을 통한 이용자의 자발적 입력
+              </li>
             </ul>
           </section>
 
@@ -75,8 +85,8 @@ export default function PrivacyPage() {
               3. 개인정보의 보유 및 이용 기간
             </h2>
             <p className="mt-3">
-              회사는 원칙적으로 개인정보 수집 및 이용 목적이 달성된 후에는
-              해당 정보를 지체 없이 파기합니다. 다만, 「전자상거래 등에서의
+              회사는 원칙적으로 개인정보 수집 및 이용 목적이 달성된 후에는 해당
+              정보를 지체 없이 파기합니다. 다만, 「전자상거래 등에서의
               소비자보호에 관한 법률」 등 관계 법령의 규정에 의하여 보존할
               필요가 있는 경우 회사는 관계 법령에서 정한 일정한 기간 동안
               회원정보를 보관합니다.
@@ -89,8 +99,8 @@ export default function PrivacyPage() {
             </h2>
             <p className="mt-3">
               회사는 이용자의 개인정보를 원칙적으로 외부에 제공하지 않습니다.
-              다만 이용자의 사전 동의가 있거나 법령의 규정에 의한 경우는
-              예외로 합니다.
+              다만 이용자의 사전 동의가 있거나 법령의 규정에 의한 경우는 예외로
+              합니다.
             </p>
           </section>
 
@@ -147,25 +157,25 @@ export default function PrivacyPage() {
             </h2>
             <p className="mt-3">
               회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보
-              처리와 관련한 정보주체의 불만 처리 및 피해 구제 등을 위하여
-              아래와 같이 개인정보 보호책임자를 지정하고 있습니다.
+              처리와 관련한 정보주체의 불만 처리 및 피해 구제 등을 위하여 아래와
+              같이 개인정보 보호책임자를 지정하고 있습니다.
             </p>
             <div className="glass-panel mt-4 rounded-[20px] p-6">
               <dl className="space-y-2">
                 <div className="flex gap-2">
-                  <dt className="w-24 shrink-0 text-muted">상호</dt>
+                  <dt className="w-20 shrink-0 text-muted">상호</dt>
                   <dd className="text-heading">{companyInfo.name}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="w-24 shrink-0 text-muted">대표자</dt>
+                  <dt className="w-20 shrink-0 text-muted">대표자</dt>
                   <dd className="text-heading">{companyInfo.ceo}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="w-24 shrink-0 text-muted">연락처</dt>
+                  <dt className="w-20 shrink-0 text-muted">연락처</dt>
                   <dd className="text-heading">{phoneDisplay}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="w-24 shrink-0 text-muted">이메일</dt>
+                  <dt className="w-20 shrink-0 text-muted">이메일</dt>
                   <dd className="text-heading">{emailDisplay}</dd>
                 </div>
               </dl>
@@ -177,9 +187,9 @@ export default function PrivacyPage() {
               10. 고지의 의무
             </h2>
             <p className="mt-3">
-              현 개인정보처리방침의 내용 추가, 삭제 및 수정이 있을 시에는
-              개정 최소 7일 전부터 홈페이지의 &ldquo;공지사항&rdquo;을 통해
-              고지할 것입니다.
+              현 개인정보처리방침의 내용 추가, 삭제 및 수정이 있을 시에는 개정
+              최소 7일 전부터 홈페이지의 &ldquo;공지사항&rdquo;을 통해 고지할
+              것입니다.
             </p>
           </section>
         </div>

@@ -2,91 +2,78 @@ import Link from "next/link";
 import { companyInfo, contactInfo, navigation } from "@/data/company";
 import { Logo } from "@/components/ui/Logo";
 import { AnchorLink } from "@/components/ui/AnchorLink";
-import { AdminNotice } from "@/components/ui/AdminNotice";
-import { StarField } from "@/components/motion/StarField";
-import { SectionEdgeFade } from "@/components/ui/SectionEdgeFade";
+import { Container } from "@/components/ui/Container";
 import { isConfigured, formatPhoneHref } from "@/lib/utils";
-
 export function Footer() {
-  const year = new Date().getFullYear();
-
   return (
-    <footer className="bg-cosmos-gradient relative overflow-hidden pb-28 pt-16 lg:pb-16">
-      <div className="pointer-events-none absolute inset-0 bg-blueprint-grid-dark opacity-30" aria-hidden="true" />
-      <StarField count={60} />
-      <SectionEdgeFade position="top" color="#f8f7f4" heightClassName="h-10 sm:h-12" />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"
-        aria-hidden="true"
-      />
-
-      <div className="relative mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8">
-        <div>
-          <Logo onDark />
-          <p className="mt-4 max-w-sm text-body text-platinum">
-            {companyInfo.name}은 경기도 김포시에 위치한 자동차용 신품 부품
-            제조기업입니다. 정확성과 일관성을 기반으로 신뢰할 수 있는 생산을
-            지향합니다.
-          </p>
-        </div>
-
-        <div>
-          <h2 className="font-en text-sm font-semibold uppercase tracking-wide text-platinum">
-            메뉴
-          </h2>
-          <ul className="mt-4 space-y-2">
-            {navigation.map((item) => (
-              <li key={item.href}>
-                <AnchorLink
-                  href={item.href}
-                  className="text-body text-platinum transition-colors hover:text-gold-soft"
-                >
-                  {item.label}
-                </AnchorLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="space-y-1 text-body text-platinum">
-          <h2 className="font-en text-sm font-semibold uppercase tracking-wide text-platinum">
-            기업정보
-          </h2>
-          <div className="mt-4 space-y-1.5">
-            <p className="text-on-dark">{companyInfo.name}</p>
-            <p>대표자 {companyInfo.ceo}</p>
-            <p>사업자등록번호 {companyInfo.bizRegNo}</p>
-            <p>{companyInfo.address}</p>
-            {isConfigured(contactInfo.phone) ? (
-              <p>
-                <a href={formatPhoneHref(contactInfo.phone)} className="hover:text-gold-soft">
-                  {contactInfo.phone}
-                </a>
-              </p>
-            ) : (
-              <AdminNotice label="대표 전화번호" className="mt-2" onDark />
+    <footer className="bg-navy pb-28 pt-12 text-platinum lg:pb-8 lg:pt-16">
+      <Container>
+        <div className="grid gap-10 border-b border-white/20 pb-10 lg:grid-cols-[1.3fr_.7fr_1fr]">
+          <div>
+            <Logo onDark />
+            <p className="mt-5 max-w-sm text-base leading-relaxed">
+              정확한 제조와 책임 있는 일정 관리.
+              <br />
+              고객의 요구사항에서 시작합니다.
+            </p>
+          </div>
+          <nav aria-label="하단 메뉴">
+            <p className="text-xs font-semibold tracking-[.15em] text-white">
+              EXPLORE
+            </p>
+            <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1">
+              {navigation.map((item) => (
+                <li key={item.href}>
+                  <AnchorLink
+                    href={item.href}
+                    className="inline-flex min-h-11 items-center text-sm hover:text-white"
+                  >
+                    {item.label}
+                  </AnchorLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="text-sm leading-relaxed">
+            <p className="mb-4 text-xs font-semibold tracking-[.15em] text-white">
+              COMPANY
+            </p>
+            <p className="text-white">
+              {companyInfo.name} · 대표 {companyInfo.ceo}
+            </p>
+            <p className="mt-2">사업자등록번호 {companyInfo.bizRegNo}</p>
+            <p className="mt-2">{companyInfo.address}</p>
+            {isConfigured(contactInfo.phone) && (
+              <a
+                className="mt-3 inline-flex min-h-11 items-center text-white"
+                href={formatPhoneHref(contactInfo.phone)}
+              >
+                {contactInfo.phone}
+              </a>
             )}
-            {isConfigured(contactInfo.generalEmail) ? (
-              <p>
-                <a href={`mailto:${contactInfo.generalEmail}`} className="hover:text-gold-soft">
-                  {contactInfo.generalEmail}
-                </a>
-              </p>
-            ) : (
-              <AdminNotice label="이메일" className="mt-2" onDark />
+            {isConfigured(contactInfo.generalEmail) && (
+              <a
+                className="mt-2 block break-all text-white"
+                href={`mailto:${contactInfo.generalEmail}`}
+              >
+                {contactInfo.generalEmail}
+              </a>
             )}
           </div>
         </div>
-      </div>
-
-      <div className="relative mx-auto mt-12 flex max-w-7xl flex-col gap-3 border-t border-line-on-dark px-4 pt-6 text-caption text-platinum sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-        <p>
-          © {year} {companyInfo.name}. 모든 권리 보유.
-        </p>
-        <Link href="/privacy" className="transition-colors hover:text-gold-soft">
-          개인정보처리방침
-        </Link>
-      </div>
+        <div className="flex flex-col gap-3 pt-6 text-xs sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} SANGIL ENGINEERING. All rights
+            reserved.
+          </p>
+          <Link
+            href="/privacy"
+            className="inline-flex min-h-11 items-center text-sm hover:text-white"
+          >
+            개인정보처리방침
+          </Link>
+        </div>
+      </Container>
     </footer>
   );
 }

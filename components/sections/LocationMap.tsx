@@ -1,102 +1,95 @@
 "use client";
-
-import { useState } from "react";
-import { Navigation, Copy, Check, Phone, Mail } from "lucide-react";
-import { contactInfo, mapConfig } from "@/data/company";
+import { useEffect, useRef, useState } from "react";
+import { MapPin, Copy, Check, ExternalLink } from "lucide-react";
+import { companyInfo, mapConfig } from "@/data/company";
 import { Container } from "@/components/ui/Container";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { AdminNotice } from "@/components/ui/AdminNotice";
-import { Reveal } from "@/components/motion/Reveal";
-import { isConfigured, formatPhoneHref } from "@/lib/utils";
 
 export function LocationMap() {
-  const [copied, setCopied] = useState(false);
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${mapConfig.lat},${mapConfig.lng}`;
-  const embedUrl = `https://maps.google.com/maps?q=${mapConfig.lat},${mapConfig.lng}&z=${mapConfig.zoomLevel}&output=embed`;
-  const emailTarget = contactInfo.quoteEmail ?? contactInfo.generalEmail;
-
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">(
+    "idle",
+  );
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
   const handleCopy = async () => {
+    if (timer.current) clearTimeout(timer.current);
     try {
       await navigator.clipboard.writeText(mapConfig.address);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      setCopyStatus("copied");
     } catch {
-      setCopied(false);
+      setCopyStatus("error");
     }
+    timer.current = setTimeout(() => setCopyStatus("idle"), 4000);
   };
-
+  // The configured coordinates are approximate. Use the verified address, never a false map pin.
+  const searchUrl = `https://map.naver.com/p/search/${encodeURIComponent(mapConfig.address)}`;
   return (
-    <section id="location" className="relative bg-ivory py-24 sm:py-32">
+    <section
+      id="location"
+      className="section-space border-t border-line bg-ivory"
+    >
       <Container>
-        <SectionHeading eyebrow="Location" title="오시는 길" description={mapConfig.address} />
-
-        <Reveal className="glass-panel mt-12 overflow-hidden rounded-[28px]">
-          <div className="relative aspect-[4/3] w-full sm:aspect-[16/9]">
-            <iframe
-              src={embedUrl}
-              title="상일엔지니어링 위치 지도"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="absolute inset-0 h-full w-full border-0 grayscale-[0.1]"
-            />
+        <div className="grid gap-8 lg:grid-cols-[.65fr_1.35fr] lg:gap-20">
+          <div>
+            <p className="section-kicker">Visit us</p>
+            <h2 className="mt-4 text-heading-1 font-bold text-heading">
+              오시는 길
+            </h2>
+            <p className="mt-4 text-body text-muted">
+              방문 전 주소를 확인해 주세요.
+            </p>
           </div>
-
-          <div className="flex flex-col gap-4 border-t border-line p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-            <div>
-              <p className="font-en text-sm text-muted">ADDRESS</p>
-              <p className="mt-1 text-body-lg font-medium text-heading">{mapConfig.address}</p>
+          <div className="rounded-xl border border-line bg-white p-6 sm:p-9">
+            <div className="flex items-start gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-mist text-sapphire">
+                <MapPin className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-sm text-muted">
+                  {companyInfo.name} · 우편번호 {companyInfo.postalCode}
+                </p>
+                <p className="mt-2 text-lg font-semibold leading-relaxed text-heading">
+                  {mapConfig.address}
+                </p>
+              </div>
             </div>
-
-            <div className="flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap gap-3 border-t border-line pt-6">
               <a
-                href={directionsUrl}
+                href={searchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="gold-sweep touch-target relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-navy px-5 py-2.5 font-en text-sm font-semibold text-on-dark"
+                className="touch-target inline-flex items-center gap-2 rounded-lg bg-navy px-5 py-3 text-sm font-semibold text-white hover:bg-navy-deep"
               >
-                <span className="relative z-[2] flex items-center gap-2">
-                  <Navigation className="h-4 w-4 text-gold-soft" aria-hidden="true" />
-                  길찾기
-                </span>
+                네이버 지도에서 보기
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only"> (새 창)</span>
               </a>
-
               <button
                 type="button"
                 onClick={handleCopy}
-                className="touch-target inline-flex items-center gap-2 rounded-full border border-line-strong px-5 py-2.5 font-en text-sm font-semibold text-heading transition-colors hover:border-gold/50 hover:text-sapphire"
+                className="touch-target inline-flex items-center gap-2 rounded-lg border border-line-strong px-5 py-3 text-sm font-semibold text-heading hover:border-sapphire"
               >
-                {copied ? (
-                  <Check className="h-4 w-4 text-sapphire" aria-hidden="true" />
+                {copyStatus === "copied" ? (
+                  <Check className="h-4 w-4" aria-hidden="true" />
                 ) : (
                   <Copy className="h-4 w-4" aria-hidden="true" />
                 )}
-                <span aria-live="polite">{copied ? "복사됨" : "주소 복사"}</span>
+                주소 복사
               </button>
-
-              {isConfigured(contactInfo.phone) && (
-                <a
-                  href={formatPhoneHref(contactInfo.phone)}
-                  className="touch-target inline-flex items-center gap-2 rounded-full border border-line-strong px-5 py-2.5 font-en text-sm font-semibold text-heading transition-colors hover:border-gold/50 hover:text-sapphire"
-                >
-                  <Phone className="h-4 w-4" aria-hidden="true" />
-                  전화 문의
-                </a>
-              )}
-
-              {isConfigured(emailTarget) && (
-                <a
-                  href={`mailto:${emailTarget}`}
-                  className="touch-target inline-flex items-center gap-2 rounded-full border border-line-strong px-5 py-2.5 font-en text-sm font-semibold text-heading transition-colors hover:border-gold/50 hover:text-sapphire"
-                >
-                  <Mail className="h-4 w-4" aria-hidden="true" />
-                  이메일 문의
-                </a>
-              )}
             </div>
+            <p className="mt-3 min-h-5 text-sm text-muted" role="status">
+              {copyStatus === "copied"
+                ? "주소를 복사했습니다."
+                : copyStatus === "error"
+                  ? "복사하지 못했습니다. 위 주소를 직접 선택해 복사해 주세요."
+                  : ""}
+            </p>
           </div>
-        </Reveal>
-
-        <AdminNotice className="mt-4" label="지도 좌표 확인 필요 (data/company.ts의 mapConfig - 현재 값은 근사 좌표입니다)" />
+        </div>
       </Container>
     </section>
   );

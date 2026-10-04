@@ -1,13 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { MobileStickyCta } from "@/components/layout/MobileStickyCta";
-import { LenisProvider } from "@/components/motion/LenisProvider";
-import { GlassPointerTracker } from "@/components/motion/GlassPointerTracker";
 import { siteConfig } from "@/data/company";
 import { buildLocalBusinessJsonLd } from "@/lib/structuredData";
 
@@ -15,18 +12,6 @@ const pretendard = localFont({
   src: "../assets/fonts/PretendardVariable.woff2",
   variable: "--font-pretendard",
   weight: "45 920",
-  display: "swap",
-});
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-  display: "swap",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
   display: "swap",
 });
 
@@ -64,33 +49,33 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#f8f7f4",
+  themeColor: "#f4f6f7",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const jsonLd = buildLocalBusinessJsonLd();
 
   return (
-    <html
-      lang="ko"
-      className={`${pretendard.variable} ${manrope.variable} ${spaceGrotesk.variable} h-full antialiased`}
-    >
+    <html lang="ko" className={`${pretendard.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-ivory font-kr text-body">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <LenisProvider>
-          <GlassPointerTracker />
+        <div id="site-shell">
           <div id="top" />
           <Header />
-          <main id="main-content" className="flex-1">
+          <main id="main-content" tabIndex={-1} className="flex-1">
             {children}
           </main>
           <Footer />
           <BackToTop />
           <MobileStickyCta />
-        </LenisProvider>
+        </div>
       </body>
     </html>
   );

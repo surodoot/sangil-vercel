@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface FormFieldProps {
   label: string;
@@ -21,8 +22,11 @@ export function FormField({
   children,
 }: FormFieldProps) {
   return (
-    <div className={className}>
-      <label htmlFor={htmlFor} className="block font-en text-sm font-semibold text-heading">
+    <div className={cn("min-w-0", className)}>
+      <label
+        htmlFor={htmlFor}
+        className="block text-sm font-medium text-heading"
+      >
         {label}
         {required && (
           <>
@@ -34,14 +38,24 @@ export function FormField({
         )}
       </label>
       <div className="mt-2">{children}</div>
-      {hint && !error && <p className="mt-1.5 text-caption text-muted">{hint}</p>}
+      {hint && (
+        <p
+          id={`${htmlFor}-hint`}
+          className="mt-1.5 text-xs leading-relaxed text-muted"
+        >
+          {hint}
+        </p>
+      )}
       {error && (
         <p
           id={`${htmlFor}-error`}
           role="alert"
-          className="mt-1.5 flex items-center gap-1.5 text-caption font-medium text-[#B91C1C]"
+          className="mt-1.5 flex items-start gap-1.5 text-xs font-medium leading-relaxed text-red-700"
         >
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <AlertCircle
+            className="mt-0.5 h-3.5 w-3.5 shrink-0"
+            aria-hidden="true"
+          />
           {error}
         </p>
       )}
@@ -50,8 +64,10 @@ export function FormField({
 }
 
 export const fieldInputClass =
-  "w-full touch-target rounded-xl border bg-white/70 px-4 py-3 text-body text-heading placeholder:text-muted/70 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sapphire disabled:opacity-50";
+  "min-h-12 w-full min-w-0 rounded-lg border bg-white px-3.5 py-3 text-[16px] leading-6 text-heading placeholder:text-muted transition-colors focus-visible:border-sapphire focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sapphire disabled:cursor-not-allowed disabled:opacity-50";
 
 export function fieldBorderClass(hasError?: boolean) {
-  return hasError ? "border-[#B91C1C]/50" : "border-line-strong";
+  return hasError
+    ? "border-red-400"
+    : "border-line-strong hover:border-sapphire/40";
 }

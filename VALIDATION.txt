@@ -1,0 +1,44 @@
+SANGIL DESIGN + MOBILE REFRESH — VALIDATION
+2026-10-04 UTC
+
+Repository: https://github.com/surodoot/Sangil
+Base: 6be7fd203c5b242dd8ca70e4b66831fce01d9b2e
+Local branch: design/modern-mobile-refresh
+
+PASSED
+- npm ci (initial locked dependencies; subsequent test/security additions installed successfully)
+- npm run lint
+- npm run typecheck
+- npm run test: 13 tests, 13 passed, 0 failed
+- npm run build: Next.js 16.3.6, all 9 static outputs generated
+- npm run check: lint + typecheck + tests + production build
+- npm run test:e2e -- --list: 16 browser scenarios discovered (listing only)
+- Production HTTP smoke: /, /privacy, /robots.txt, /sitemap.xml => HTTP 200
+- Production HTTP smoke: POST /api/inquiry => HTTP 503, INQUIRY_SERVICE_UNAVAILABLE, Cache-Control: no-store
+- Production HTML: exactly one h1; inquiry unavailable notice present; no opacity:0 initial content
+- git diff --check
+- data/company.ts remains unchanged
+- npm audit --omit=dev: 0 known vulnerabilities at test time
+
+DEVELOPMENT DEPENDENCY AUDIT
+- Full npm audit: 22 high-severity package entries in the development/lint dependency chain, 0 critical. These include inherited ESLint, glob, brace-expansion, minimatch and js-yaml advisories. They are not 22 distinct production vulnerabilities. No forced or major lint-tool upgrade was attempted; review separately.
+
+BROWSER VERIFICATION BLOCKED / NOT RUN
+- No real desktop or mobile browser rendering or screenshots
+- No executed Playwright scenarios, real-device touch/focus/scroll checks, Lighthouse or automated accessibility score
+- Cloud browser localhost navigation returned ERR_BLOCKED_BY_CLIENT
+- Isolated Chromium process launch failed with UNIX socket Operation not permitted, including the reviewed attempt
+- No attempt was made to bypass the environment restriction or publicly deploy for testing
+
+DEPENDENCIES
+Next.js / eslint-config-next: 16.3.6 (compatible patch from 16.3.1)
+React / React DOM: 19.2.8 (unchanged)
+sharp: 0.35.5 (within Next's ^0.35.4 supported range)
+Playwright: 1.63.0 (development test dependency)
+tsx: 4.23.15 (development test dependency)
+
+PUBLICATION
+This validation snapshot was prepared before remote publication. No local Git author name/email was configured, so no author identity was invented. Remote publication is a separate step; consult the resulting GitHub branch/PR for its actual status. No main-branch merge or deployment is part of this validation.
+
+REMAINING BEFORE PUBLIC USE
+Verified contact details, real equipment/product photos and specifications, actual domain, working inquiry delivery/storage, finalized privacy notice, and real-browser visual/interaction QA.

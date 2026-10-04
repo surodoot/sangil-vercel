@@ -1,55 +1,121 @@
 "use client";
 
-import { useEffect, type RefObject } from "react";
+import { useLayoutEffect, useRef, type RefObject } from "react";
 
 const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
 
-/**
- * 모달/전체화면 메뉴가 열려 있는 동안 포커스를 내부에 가두고,
- * Esc 키로 닫을 수 있게 합니다. 닫힐 때는 트리거 요소로 포커스를 되돌립니다.
- */
+function isVisible(element: HTMLElement) {
+  return (
+    element.getClientRects().length > 0 &&
+    window.getComputedStyle(element).visibility !== "hidden" &&
+    !element.closest('[inert], [aria-hidden="true"]')
+  );
+}
+
+/** Trap focus, isolate background content, and restore the original trigger. */
 export function useFocusTrap(
   ref: RefObject<HTMLElement | null>,
   active: boolean,
   onClose: () => void,
 ) {
-  useEffect(() => {
+  const onCloseRef = useRef(onClose);
+
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useLayoutEffect(() => {
     if (!active || !ref.current) return;
+
     const container = ref.current;
-    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const previousTabIndex = container.getAttribute("tabindex");
+    if (previousTabIndex === null) container.tabIndex = -1;
 
     const getFocusable = () =>
-      Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+      Array.from(
+        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((element) => element.tabIndex >= 0 && isVisible(element));
 
-    const focusable = getFocusable();
-    (focusable[0] ?? container).focus();
+    const focusFirst = () => {
+      const preferred =
+        container.querySelector<HTMLElement>("[data-autofocus]");
+      const target =
+        preferred && isVisible(preferred) ? preferred : getFocusable()[0];
+      (target ?? container).focus({ preventScroll: true });
+    };
+
+    // Focus inside before isolating siblings, so the active trigger is never inert.
+    focusFirst();
+    const background = new Map<HTMLElement, boolean>();
+    let branch: HTMLElement = container;
+    while (branch.parentElement) {
+      for (const sibling of branch.parentElement.children) {
+        if (sibling instanceof HTMLElement && sibling !== branch) {
+          background.set(sibling, sibling.inert);
+          sibling.setAttribute("inert", "");
+        }
+      }
+      if (branch.parentElement === document.body) break;
+      branch = branch.parentElement;
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         event.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== "Tab") return;
+
       const items = getFocusable();
-      if (items.length === 0) return;
+      if (items.length === 0) {
+        event.preventDefault();
+        container.focus({ preventScroll: true });
+        return;
+      }
+
       const first = items[0];
       const last = items[items.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
+      const current = document.activeElement;
+      const outside = !current || !container.contains(current);
+      if (
+        event.shiftKey &&
+        (current === first || current === container || outside)
+      ) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (
+        !event.shiftKey &&
+        (current === last || current === container || outside)
+      ) {
         event.preventDefault();
         first.focus();
       }
     };
 
+    const handleFocusIn = (event: FocusEvent) => {
+      if (event.target instanceof Node && !container.contains(event.target))
+        focusFirst();
+    };
+
     document.addEventListener("keydown", handleKeyDown, true);
+    document.addEventListener("focusin", handleFocusIn, true);
     return () => {
       document.removeEventListener("keydown", handleKeyDown, true);
-      previouslyFocused?.focus();
+      document.removeEventListener("focusin", handleFocusIn, true);
+      background.forEach((wasInert, element) => {
+        element.toggleAttribute("inert", wasInert);
+      });
+      if (previousTabIndex === null) container.removeAttribute("tabindex");
+      if (previouslyFocused?.isConnected && isVisible(previouslyFocused)) {
+        previouslyFocused.focus({ preventScroll: true });
+      }
     };
-  }, [active, ref, onClose]);
+  }, [active, ref]);
 }

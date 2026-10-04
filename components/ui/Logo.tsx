@@ -1,38 +1,36 @@
-import Link from "next/link";
 import { companyInfo } from "@/data/company";
+import { AnchorLink } from "@/components/ui/AnchorLink";
 import { cn } from "@/lib/utils";
 
 interface LogoProps {
   className?: string;
-  /** 네이비 등 어두운 배경 위에 놓일 때 true */
   onDark?: boolean;
 }
 
-/**
- * ⚠️ [회사 로고 입력]
- * 현재는 실제 로고 이미지가 없어 워드마크 텍스트 로고를 사용합니다.
- * 로고 파일이 준비되면 이 컴포넌트를 next/image 기반으로 교체하세요.
- */
+/** A typographic wordmark until the company's official logo is supplied. */
 export function Logo({ className, onDark }: LogoProps) {
   return (
-    <Link
-      href="#top"
+    <AnchorLink
+      href="/#top"
       className={cn(
-        "group inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight sm:text-xl",
-        onDark ? "text-on-dark" : "text-heading",
+        "inline-flex min-h-11 shrink-0 flex-col justify-center gap-1",
+        onDark ? "text-white" : "text-[#172b3a]",
         className,
       )}
       aria-label={`${companyInfo.name} 홈으로 이동`}
     >
+      <span className="whitespace-nowrap text-[19px] leading-none font-extrabold tracking-[-0.055em] lg:text-[21px]">
+        {companyInfo.name}
+      </span>
       <span
         aria-hidden="true"
-        className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-gold/50 bg-navy text-[0.7rem] font-black text-on-dark"
+        className={cn(
+          "font-en text-[8px] leading-none font-semibold tracking-[0.16em] lg:text-[9px]",
+          onDark ? "text-white/60" : "text-[#6b7b88]",
+        )}
       >
-        SE
+        SANGIL ENGINEERING
       </span>
-      <span className="whitespace-nowrap">
-        상일<span className="text-sapphire">엔지니어링</span>
-      </span>
-    </Link>
+    </AnchorLink>
   );
 }

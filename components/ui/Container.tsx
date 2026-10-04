@@ -10,7 +10,7 @@ interface ContainerProps {
 export function Container({ children, className, as = "div" }: ContainerProps) {
   return createElement(
     as,
-    { className: cn("mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8", className) },
+    { className: cn("mx-auto w-full max-w-[1376px] px-6 lg:px-12", className) },
     children,
   );
 }
